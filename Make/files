@@ -1,0 +1,4 @@
+scdccFoam.C
+BCs/robinTemperatureFvPatchScalarField.C
+
+EXE = $(FOAM_USER_APPBIN)/scdccFoam
