@@ -1,0 +1,84 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v1712                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      binary;
+    class       volScalarField;
+    arch        "LSB;label=32;scalar=64";
+    location    "0";
+    object      p_rgh;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+
+internalField   uniform 101325;
+
+boundaryField
+{
+    Top
+    {
+        type            totalPressure;
+        rho             rho;
+        psi             none;
+        gamma           1;
+        p0              nonuniform 0;
+        value           nonuniform 0;
+    }
+    Bottom
+    {
+        type            fixedFluxPressure;
+        gradient        uniform 0;
+        value           uniform 101325;
+    }
+    htopWall
+    {
+        type            fixedFluxPressure;
+        gradient        nonuniform 0;
+        value           nonuniform 0;
+    }
+    condWall
+    {
+        type            fixedFluxPressure;
+        gradient        nonuniform 0;
+        value           nonuniform 0;
+    }
+    convWall
+    {
+        type            fixedFluxPressure;
+        gradient        nonuniform 0;
+        value           nonuniform 0;
+    }
+    LSymm
+    {
+        type            symmetryPlane;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+    defaultFaces
+    {
+        type            empty;
+    }
+    procBoundary0to1
+    {
+        type            processor;
+        value           uniform 101325;
+    }
+    procBoundary0to2
+    {
+        type            processor;
+        value           uniform 101325;
+    }
+}
+
+
+// ************************************************************************* //

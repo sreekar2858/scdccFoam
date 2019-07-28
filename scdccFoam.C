@@ -22,18 +22,16 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    solidificationFoam
+    scdccFoam
 
 Description
-    Transient solver for columnar dendritic solidification of binary metal
-    alloys according to Lever rule. There are two incompressible phases (1 =
-    solid, 2 = liquid). The phase densities may be different resulting in
-    shrinkage/expansion induced flow during phase change. The solid phase is
-    assumed to form a rigid packed bed which exerts a drag force on the liquid
-    modeled according to the Carmen-Kozeny laws. The liquid buoyancy force is
-    modelled according to the Buossinesq approximation.
+    Time deopendent solver for dendritic solidification of binary metal alloys according to Lever rule.
+    There are two incompressible phases (1 = solid, 2 = liquid).
+    The phase densities may be different resulting in shrinkage/expansion induced flow during phase change.
+    The liquid buoyancy force is modelled according to the Buossinesq approximation.
 
 \*---------------------------------------------------------------------------*/
+//CFD Libraries
 
 #include "fvCFD.H"
 #include "solidificationSystem.H"
@@ -45,7 +43,6 @@ Description
 int main(int argc, char *argv[])
 {
     #include "postProcess.H"
-
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -69,12 +66,12 @@ int main(int argc, char *argv[])
 
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        // --- Pressure-velocity PIMPLE corrector loop
+        // --- Pressure-velocity PIMPLE solver with corrector loop
         while (pimple.loop())
         {
-            // --- Thermodyanmic loop
+            // --- Thermodyanmic loop solves T, C, alpha
             #include "thermoLoop.H"
-
+            // --- Momentum
             #include "pU/UEqn.H"
 
             // --- Pressure corrector loop
