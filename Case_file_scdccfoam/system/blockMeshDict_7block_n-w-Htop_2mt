@@ -1,0 +1,218 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v1812                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+dia         0.2;
+in_wid      0.075;
+htop_n        2;
+htop_w      1.9;
+cond        1.83;
+conv        1.8;
+
+//element size in meters
+elemsize       0.005;
+//Number of mesh cells calculations
+x_in_wid  #calc "std::floor($in_wid/$elemsize)";
+x_side    #calc "std::floor(($dia-$in_wid)/$elemsize)";
+y_conv    #calc "std::floor($conv/$elemsize)";
+y_cond    #calc "std::floor(($cond-$conv)/$elemsize)";
+y_htop_w  #calc "std::floor(($htop_w-$cond)/$elemsize)";
+y_htop_n  #calc "std::floor(($htop_n-$cond)/$elemsize)";
+
+//"Info<< Number of cells in X-axis in the Inner wider region - << endl";
+#calc "Info<<$x_in_wid << endl";
+
+//"Info<< Number of cells in X-axis in the outer thinner region -  << endl";
+#calc "Info<<$x_side << endl";
+
+//"Info<< Number of cells in Y-axis in the convection region - << endl";
+#calc "Info<<$y_conv << endl";
+
+//"Info<< Number of cells in Y-axis in the conduction region - << endl";
+#calc "Info<<$y_cond << endl";
+
+//"Info<< Number of cells in Y-axis in the Htop Top region - << endl";
+#calc "Info<<$y_htop_w << endl";
+#calc "Info<<$y_htop_n <<endl";
+
+
+scale   1;
+
+vertices
+(
+//Base-Block
+    ($in_wid      0     0)       //0
+    ($dia         0     0)       //1
+    ($dia         $conv 0)       //2
+    ($in_wid      $conv 0)       //3
+    ($in_wid      0     0.005)   //4
+    ($dia         0     0.005)   //5
+    ($dia         $conv 0.005)   //6
+    ($in_wid      $conv 0.005)   //7
+    //inner block beside convection
+    (0            0     0)       //8
+    (0            $conv 0)       //9
+    (0            0     0.005)   //10
+    (0            $conv 0.005)   //11
+//Conduction-Block
+    ($in_wid      $cond 0)       //12
+    ($dia         $cond 0)       //13
+    ($in_wid      $cond 0.005)   //14
+    ($dia         $cond 0.005)   //15
+    //inner block beside conduction
+    (0            $cond 0)       //16
+    (0            $cond 0.005)   //17
+//HotTop-Block - wide
+    ($in_wid      $htop_w 0)      //18
+    ($dia         $htop_w 0)      //19
+    ($in_wid      $htop_w 0.005)  //20
+    ($dia         $htop_w 0.005)  //21
+    //inner blocks beside hot top wider doamin
+    (0            $htop_w 0)      //22
+    (0            $htop_w 0.005)  //23
+//HotTop-Block - narrow
+    (0            $htop_n 0)      //24
+    ($in_wid      $htop_n 0)      //25
+    (0            $htop_n 0.005)  //26
+    ($in_wid      $htop_n 0.005)  //27
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7)           ($x_side    $y_conv   1) simpleGrading (1 1 1) //1
+    hex (8 0 3 9 10 4 7 11)         ($x_in_wid  $y_conv   1) simpleGrading (1 1 1) //2
+    hex (3 2 13 12 7 6 15 14)       ($x_side    $y_cond   1) simpleGrading (1 1 1) //3
+    hex (9 3 12 16 11 7 14 17)      ($x_in_wid  $y_cond   1) simpleGrading (1 1 1) //4
+    hex (12 13 19 18 14 15 21 20)   ($x_side    $y_htop_w 1) simpleGrading (1 1 1) //5
+    hex (16 12 18 22 17 14 20 23)   ($x_in_wid  $y_htop_w 1) simpleGrading (1 1 1) //6
+    hex (22 18 25 24 23 20 27 26)   ($x_in_wid  $y_htop_n 1) simpleGrading (1 1 1) //7
+);
+
+edges
+(
+);
+
+boundary
+(
+    Top
+    {
+        type patch;
+        faces
+        (
+            (24 26 27 25)
+        );
+    }
+    Bottom
+    {
+        type patch;
+        faces
+        (
+            (1 5 4 0)
+            (0 4 10 8)
+        );
+    }
+    htopWall
+    {
+      type wall;
+      faces
+      (
+        (19 21 15 13)
+        (25 27 20 18)
+        //(19 18 20 21)
+      );
+    }
+    condWall
+    {
+        type wall;
+        faces
+        (
+          (13 15 6 2)
+        );
+    }
+    convWall
+    {
+        type wall;
+        faces
+        (
+          (2 6 5 1)
+        );
+    }
+    LSymm
+    {
+        type symmetryPlane;
+        faces
+        (
+            (8 10 11 9)
+            (9 11 17 16)
+            (16 17 23 22)
+            (22 23 26 24)
+        );
+    }
+    frontAndBack
+    {
+        type empty;
+        faces
+        (
+            (0 3 2 1)
+            (4 5 6 7)
+
+            (8 9 3 0)
+            (10 4 7 11)
+
+            (9 16 12 3)
+            (11 7 14 17)
+
+            (3 12 13 2)
+            (7 6 15 14)
+
+            (16 22 18 12)
+            (17 14 20 23)
+
+            (12 18 19 13)
+            (14 15 21 20)
+
+            (22 24 25 18)
+            (23 20 27 26)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+
+/*
+Vertices positions
+
+--------------------
+24  25
+26  27  //back
+--------------------
+22  18 19
+
+23  20  21 //back
+--------------------
+16  12 13
+
+17  14 15 //back
+--------------------
+11   7  6//BACK
+
+9    3  2
+8    0  1
+
+10   4  5 //BACK
+*/
+// ************************************************************************* //
